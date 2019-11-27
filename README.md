@@ -1,40 +1,41 @@
 ## Расчет прогноза заказов на Нью-Йоркское такси
 
-You can use the [editor on GitHub](https://github.com/SergeyBridge/taxi/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Классическая задача на анализ реальных данных заказа такси в Нью-Йорке
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Департамент транспорта Нью-Йорка (NYC TLC, 
+NYC Taxi and Limousine Commission) с 2009 года выкладывает данные реальных поездок такси нескольких сертифицированных перевозчиков, 
 
-### Markdown 111
+### Анализ данных
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-before
-```
-  markdown
+1. данные обновляются ежемесячно, в виде обезличенного файла поездок, размер файла несколько Гб, иногда такой файл не помещается в память (16Гб)
 
-after
-Syntax highlighted code block
+2. формат данных с начала проекта несколько раз изменялся, т.е. данные нужно было исследовать и привести к одному формату
 
-# Header 1 Taxi1
-## Header 2 Taxi2
-### Taxi 3
+3. Несколько раз были сбои в передаче данных, в официальных файлах данные за эти периоды просто отсутствуют, никаких комментариев по этому нет, такие провалы для целей дальнейшего анализа пришлось обнаруживать и исключать из анализа. Я использовал заполнение средним прогнозом из моделирования прошлых нескольких месяцев
 
-- Bulleted
-- List
+4. признаки предсказательных моделей включают праздники в США, отчеты о погоде (особенно влияет на заказ такси в районе  пляжа :) )
 
-1. Numbered
-2. List
+5. учитывается перевод декретного времени (в США) с летнего на зимнее в марте каждого года
 
-**Bold** and _Italic_ and `Code` text
 
-[Link](url) and ![Image](src)
-```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes 111
+### Моделирование
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/SergeyBridge/taxi/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+Пробовал модели ARIMA (SARIMAX), случайный лес из sklern, градиентный бустинг (XGBoost, Catboost)
 
-### Support or Contact
+у меня победила Catboost, оформил и выложил ARIMA и Catboost
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+1. Критерий отбора в основном была точность прогноза. 
+
+2. Реализация ARIMA в питоне задействует много памяти, это должно быть существенным ограничением, но у меня памяти было много, поэтому программировать задачу было просто. 
+
+3. Использовал видеокарту, catboost и xgboost работают с CUDA. XGBoost обучается быстрее, но для данной задачи и моего признакового пространства точнее отработал catboost, 
+
+4. Прогноз ARIMA  оказался существенно хуже всех моделей, включая RandomForest. На мой взгляд, старая модель, нет необходимости ее использовать в современном машинном обучении
+
+5. В некоторых вариантах решения этой задачи (у других людей) встречал качественные решения на RandomForest, но все хуже по точности (accuracy), чем у градиентного бустинга. Однако обучаются они быстрее, чем catboost & xgboost
+
+
+
+
